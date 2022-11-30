@@ -7,6 +7,7 @@
 from machine import Pin, UART
 from DHT22 import DHT22
 import time
+import json
 
 # Initialize DHT22
 dht22 = DHT22(Pin(2,Pin.IN,Pin.PULL_UP))
@@ -19,21 +20,19 @@ uart = UART(1, 9600)
 # init with given parameters
 uart.init(9600, bits=8, parity=None, stop=1)
 
+class EnvironmentReading:
+    def __init__(self, temperature, humidity):
+        self.temperature = temperature
+        self.humidity = humidity
+        self.timestamp = time.time()
+
 while True:
     led.value(1)
     T, H = dht22.read()
-    
-    humid = H
-    #Write Humidity value. Convert the humidity into two decimal places.
-    print('Humidity: ' + "{:0.2f}".format(humid) + "%")
-    
-    temp = (T * 9/5) + 32
-    #Write Temperature value and convert the temperature.
-    print('Temp: ' + str(temp) + "F")
-    print('')
-    
-    # Try to write to COM
-    uart.write(str(temp) + ',' + str(humid) + '\n')
+    temp = (T * 9/5) + 32;
+    reading = EnvironmentReading(temp, H);    
+    # write output to console
+    uart.write(json.dumps(reading) + '\n')
 
     time.sleep_ms(500)
     led.value(0)
