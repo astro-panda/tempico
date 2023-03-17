@@ -8,6 +8,7 @@ from machine import Pin, UART
 from DHT22 import DHT22
 import time
 import json
+import math
 
 # Initialize DHT22
 dht22 = DHT22(Pin(2,Pin.IN,Pin.PULL_UP))
@@ -16,26 +17,23 @@ dht22 = DHT22(Pin(2,Pin.IN,Pin.PULL_UP))
 led = machine.Pin(25,machine.Pin.OUT)
 
 # init with given baudrate
-uart = UART(1, 9600)
+# uart = UART(1, 9600)
 # init with given parameters
-uart.init(9600, bits=8, parity=None, stop=1)
-
-class EnvironmentReading:
-    def __init__(self, temperature, humidity):
-        self.temperature = temperature
-        self.humidity = humidity
-        self.timestamp = time.time()
+# uart.init(9600, bits=8, parity=None, stop=1)
 
 while True:
     led.value(1)
     T, H = dht22.read()
     temp = (T * 9/5) + 32;
-    reading = EnvironmentReading(temp, H);    
+    reading = {'temperature': temp, 'humidity': H, 'timestamp': int(math.floor(time.time()))}
+    jsonReading = json.dumps(reading)
     # write output to console
-    uart.write(json.dumps(reading) + '\n')
+    print(jsonReading + '\n')
+    # uart.write(jsonReading + '\n')
 
     time.sleep_ms(500)
     led.value(0)
 
     # Wait for Five seconds. Then proceed to collect next sensor reading.
     time.sleep_ms(5000)
+
